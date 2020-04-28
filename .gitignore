@@ -4,3 +4,10 @@ test-system
 
 # Ignore Gradle project-specific cache directory
 .gradle
+
+# Create by intellij
+/.classpath
+/.idea/
+/.project
+/.settings/
+/bin/

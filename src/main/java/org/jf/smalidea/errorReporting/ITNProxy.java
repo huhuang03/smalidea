@@ -28,6 +28,7 @@ import com.intellij.util.SystemProperties;
 import com.intellij.util.containers.ContainerUtil;
 
 import java.util.Calendar;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -37,7 +38,7 @@ import java.util.Map;
 public class ITNProxy {
 
   public static Map<String, String> createParameters(ErrorBean error) {
-    Map<String, String> params = ContainerUtil.newLinkedHashMap(40);
+    Map<String, String> params = new LinkedHashMap(40);
 
     params.put("protocol.version", "1");
 
@@ -58,7 +59,8 @@ public class ITNProxy {
     params.put("app.version.minor", appInfo.getMinorVersion());
     params.put("app.build.date", format(appInfo.getBuildDate()));
     params.put("app.build.date.release", format(appInfo.getMajorReleaseBuildDate()));
-    params.put("app.compilation.timestamp", IdeaLogger.getOurCompilationTimestamp());
+    // deprecated??
+//    params.put("app.compilation.timestamp", IdeaLogger.getOurCompilationTimestamp());
 
     UpdateSettings updateSettings = UpdateSettings.getInstance();
     params.put("update.channel.status", updateSettings.getSelectedChannelStatus().getCode());
