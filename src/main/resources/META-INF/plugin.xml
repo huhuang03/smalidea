@@ -43,6 +43,14 @@
   </project-components>
 
   <actions>
+      <action id="org.jf.smalidea.thTest.FirstAction" class="org.jf.smalidea.thTest.FirstAction"
+              text="Hello My First Action" description="hahaha">
+          <add-to-group group-id="ToolsMenu" anchor="first"/>
+      </action>
+      <action id="org.jf.smalidea.f5.F5Action" class="org.jf.smalidea.f5.F5Action" text="Show Java"
+              description="Show the correspond java source to this smali file. Please notice that the java file is produced by the dex2java. Not by disassembly.">
+          <add-to-group group-id="CodeMenu" anchor="first"/>
+      </action>
   </actions>
 
 </idea-plugin>
