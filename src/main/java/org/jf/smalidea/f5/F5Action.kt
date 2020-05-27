@@ -6,18 +6,14 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
-import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import org.jf.smalidea.util.ex.writeBytesEx
 import org.jf.smalidea.util.logi
-import org.jf.smalidea.util.prompt
+import org.jf.smalidea.util.promptError
 import java.io.File
-import java.io.FileInputStream
 import java.util.regex.Pattern
-import java.util.zip.ZipInputStream
 
 /**
  * TODO:
@@ -26,7 +22,6 @@ import java.util.zip.ZipInputStream
  */
 class F5Action: AnAction() {
     companion object {
-        const val KEY_F5_ROOT_PATH = "key_f5_root_path"
         private const val PROJECT_ROOT_PATH = "tmp/f5/"
         const val PROJECT_SOURCE_PATH = "${PROJECT_ROOT_PATH}src"
     }
@@ -39,11 +34,11 @@ class F5Action: AnAction() {
         actionRootPath = "${project.basePath}/${PROJECT_ROOT_PATH}"
 
         if (curFile == null) {
-            prompt("You have select no file")
+            promptError("You have select no file")
             return
         }
         if (!curFile.path.endsWith(".smali")) {
-            prompt("You must select a smali file")
+            promptError("You must select a smali file")
             return
         }
 
@@ -57,19 +52,18 @@ class F5Action: AnAction() {
             println()
         }
 
-        val dstFilePath = "${project.basePath}/${PROJECT_SOURCE_PATH}/${env.className.replace(".", "/")}.smali"
+        val dstFilePath = "${project.basePath}/${PROJECT_SOURCE_PATH}/${env.className.replace(".", "/")}.class"
         logi("After calculate, the dstFilePath is: $dstFilePath")
 
         if (!File(dstFilePath).exists()) {
-            prompt("Can't find dstFile, may be you can check the $actionRootPath directory")
+            promptError("Can't find dstFile, may be you can check the $actionRootPath directory")
         }
 
         OpenFileDescriptor(project, LocalFileSystem.getInstance().findFileByIoFile(File(dstFilePath))!!).navigate(true)
     }
 
     private fun initialJavaSources(project: Project): Boolean {
-        val rootPath = PropertiesComponent.getInstance(project).getValue(KEY_F5_ROOT_PATH, "")
-        return if (rootPath.isBlank() || !File(rootPath).exists()) {
+        return if (actionRootPath.isBlank() || !File(actionRootPath).exists()) {
             realInitialJavaSource(project)
         } else {
             true
@@ -81,7 +75,7 @@ class F5Action: AnAction() {
         val descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor(".apk")
         val chosen = FileChooser.chooseFile(descriptor, project, null)
         if (chosen == null) {
-            prompt("You have select nothing")
+            promptError("You have select nothing")
             return false
         }
 
@@ -103,12 +97,12 @@ class ActionEnv(val project: Project, val currentFile: VirtualFile) {
     }
 
     private fun extraClassNameFromPath(): String {
-        val regex = Pattern.compile(".*smali(_\\d+)?(.*).smali")
+        val regex = Pattern.compile(".*smali(_[^/]+)?/(.*).smali")
         val match = regex.matcher(currentFilePath)
         if (match.find()) {
             return match.group(2)
         } else {
-            prompt("Can't extra className from smali file path: $currentFilePath")
+            promptError("Can't extra className from smali file path: $currentFilePath")
             return ""
         }
     }

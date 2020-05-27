@@ -2,7 +2,7 @@ package org.jf.smalidea.f5
 
 import org.jf.smalidea.util.ex.writeBytesEx
 import org.jf.smalidea.util.logi
-import org.jf.smalidea.util.prompt
+import org.jf.smalidea.util.promptError
 import java.io.File
 import java.io.FileInputStream
 import java.util.zip.ZipInputStream
@@ -16,7 +16,7 @@ class ApkFile(private val path: String) {
     fun extra(tmpRoot: String, sourceRoot: String): Boolean {
         logi("parse $path to $tmpRoot, src to $sourceRoot")
         if (!File(path).exists()) {
-            prompt("$path not exist")
+            promptError("$path not exist")
             return false
         }
 
