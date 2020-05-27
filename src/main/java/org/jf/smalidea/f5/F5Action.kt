@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -30,8 +31,10 @@ class F5Action: AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         // get current file
         val project = e.getData(CommonDataKeys.PROJECT) as Project
-        val curFile = e.getData(CommonDataKeys.VIRTUAL_FILE) as VirtualFile?
         actionRootPath = "${project.basePath}/${PROJECT_ROOT_PATH}"
+
+        val fem = FileEditorManager.getInstance(project)
+        val curFile = fem.selectedFiles.firstOrNull()
 
         if (curFile == null) {
             promptError("You have select no file")
