@@ -49,6 +49,7 @@
       </action>
       <action id="org.jf.smalidea.f5.F5Action" class="org.jf.smalidea.f5.F5Action" text="Show Java"
               description="Show the correspond java source to this smali file. Please notice that the java file is produced by the dex2java. Not by disassembly.">
+          <keyboard-shortcut first-keystroke="F5" keymap="$default"/>
           <add-to-group group-id="CodeMenu" anchor="first"/>
       </action>
   </actions>

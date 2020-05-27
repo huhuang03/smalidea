@@ -18,7 +18,7 @@ import java.util.regex.Pattern
 /**
  * TODO:
  * - only available in smali file
- * -
+ * - work even not select the file. but the current file
  */
 class F5Action: AnAction() {
     companion object {
