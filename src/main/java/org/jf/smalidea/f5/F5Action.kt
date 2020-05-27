@@ -11,6 +11,9 @@ import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.util.Consumer
+import io.reactivex.rxjava3.core.Observable
+import kotlinx.coroutines.channels.consumesAll
 import org.jf.smalidea.util.logi
 import org.jf.smalidea.util.promptError
 import java.io.File
@@ -50,39 +53,45 @@ class F5Action: AnAction() {
             return
         }
 
-        val initialRst = initialJavaSources(project)
-        if (!initialRst) {
-            println()
-        }
+        // fuck we can't block this execute
+        initialJavaSources(project).map {
+            if (it) {
+                val dstFilePath = "${project.basePath}/${PROJECT_SOURCE_PATH}/${env.className.replace(".", "/")}.class"
+                logi("After calculate, the dstFilePath is: $dstFilePath")
 
-        val dstFilePath = "${project.basePath}/${PROJECT_SOURCE_PATH}/${env.className.replace(".", "/")}.class"
-        logi("After calculate, the dstFilePath is: $dstFilePath")
-
-        if (!File(dstFilePath).exists()) {
-            promptError("Can't find dstFile, may be you can check the $actionRootPath directory")
-        }
-
-        OpenFileDescriptor(project, LocalFileSystem.getInstance().findFileByIoFile(File(dstFilePath))!!).navigate(true)
+                if (!File(dstFilePath).exists()) {
+                    promptError("Can't find dstFile, may be you can check the $actionRootPath directory")
+                }
+                OpenFileDescriptor(project, LocalFileSystem.getInstance().findFileByIoFile(File(dstFilePath))!!).navigate(true)
+            }
+            it
+        }.subscribe()
     }
 
-    private fun initialJavaSources(project: Project): Boolean {
+    private fun initialJavaSources(project: Project): Observable<Boolean> {
         return if (actionRootPath.isBlank() || !File(actionRootPath).exists()) {
             realInitialJavaSource(project)
         } else {
-            true
+            Observable.just(true)
         }
     }
 
-    private fun realInitialJavaSource(project: Project): Boolean {
+    private fun realInitialJavaSource(project: Project): Observable<Boolean> {
         // please choice the apk path
-        val descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor(".apk")
-        val chosen = FileChooser.chooseFile(descriptor, project, null)
-        if (chosen == null) {
-            promptError("You have select nothing")
-            return false
+        return Observable.create {emitter ->
+            val descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor(".apk")
+            FileChooser.chooseFile(descriptor, project, null) {
+                if (it == null) {
+                    promptError("You have select no apk file")
+                    emitter.onNext(false)
+                    emitter.onComplete()
+                } else {
+                    parseTheApk(it.path, actionRootPath, "${project.basePath}/${PROJECT_SOURCE_PATH}")
+                    emitter.onNext(true)
+                    emitter.onComplete()
+                }
+            }
         }
-
-        return parseTheApk(chosen.path, actionRootPath, "${project.basePath}/${PROJECT_SOURCE_PATH}")
     }
 
     private fun parseTheApk(apkPath: String, tmpRoot: String, sourceRoot: String): Boolean {
