@@ -53,18 +53,31 @@ class F5Action: AnAction() {
             return
         }
 
-        // fuck we can't block this execute
-        initialJavaSources(project).map {
-            if (it) {
-                val dstFilePath = "${project.basePath}/${PROJECT_SOURCE_PATH}/${env.className.replace(".", "/")}.class"
+        initialJavaSources(project).map {initialRst ->
+            if (initialRst) {
+                var dstFilePath = "${project.basePath}/${PROJECT_SOURCE_PATH}/${env.className.replace(".", "/")}.class"
                 logi("After calculate, the dstFilePath is: $dstFilePath")
 
                 if (!File(dstFilePath).exists()) {
-                    promptError("Can't find dstFile, may be you can check the $actionRootPath directory")
+                    // fuck we need(in this plugin?) handle the rename className
+                    val sourceFile = File(curFile.path)
+
+                    val firstLine = sourceFile.useLines { it.firstOrNull() }?: ""
+                    val pattern = Pattern.compile("#\\s*([^\\s]*)\\s*$")
+                    val match = pattern.matcher(firstLine)
+                    if (match.find()) {
+                        val realClassName = match.group(1)
+                        val className = env.className.substring(0, env.className.lastIndexOf(".")) + "." + realClassName
+                        dstFilePath = "${project.basePath}/${PROJECT_SOURCE_PATH}/${className.replace(".", "/")}.class"
+                    }
+                }
+                if (!File(dstFilePath).exists()) {
+                    promptError("Can't find dstFile ${dstFilePath}, may be you can check the $actionRootPath directory")
+                    return@map initialRst
                 }
                 OpenFileDescriptor(project, LocalFileSystem.getInstance().findFileByIoFile(File(dstFilePath))!!).navigate(true)
             }
-            it
+            initialRst
         }.subscribe()
     }
 
