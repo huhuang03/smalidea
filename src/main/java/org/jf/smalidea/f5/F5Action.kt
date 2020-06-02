@@ -67,7 +67,9 @@ class F5Action: AnAction() {
                     val match = pattern.matcher(firstLine)
                     if (match.find()) {
                         val realClassName = match.group(1)
-                        val className = env.className.substring(0, env.className.lastIndexOf(".")) + "." + realClassName
+                        println("realName: $realClassName")
+                        println("className: ${env.className}")
+                        val className = env.className.substring(0, env.className.lastIndexOf("/")) + "." + realClassName
                         dstFilePath = "${project.basePath}/${PROJECT_SOURCE_PATH}/${className.replace(".", "/")}.class"
                     }
                 }
@@ -78,7 +80,10 @@ class F5Action: AnAction() {
                 OpenFileDescriptor(project, LocalFileSystem.getInstance().findFileByIoFile(File(dstFilePath))!!).navigate(true)
             }
             initialRst
-        }.subscribe()
+        }.subscribe({}, {
+            it.printStackTrace()
+            promptError(it.message?: "unk error")
+        })
     }
 
     private fun initialJavaSources(project: Project): Observable<Boolean> {
