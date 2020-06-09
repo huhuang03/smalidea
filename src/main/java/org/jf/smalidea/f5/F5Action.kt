@@ -1,6 +1,5 @@
 package org.jf.smalidea.f5
 
-import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -11,9 +10,7 @@ import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.util.Consumer
 import io.reactivex.rxjava3.core.Observable
-import kotlinx.coroutines.channels.consumesAll
 import org.jf.smalidea.util.logi
 import org.jf.smalidea.util.promptError
 import java.io.File
@@ -88,13 +85,13 @@ class F5Action: AnAction() {
 
     private fun initialJavaSources(project: Project): Observable<Boolean> {
         return if (actionRootPath.isBlank() || !File(actionRootPath).exists()) {
-            realInitialJavaSource(project)
+            extraApkFile(project)
         } else {
             Observable.just(true)
         }
     }
 
-    private fun realInitialJavaSource(project: Project): Observable<Boolean> {
+    private fun extraApkFile(project: Project): Observable<Boolean> {
         // please choice the apk path
         return Observable.create {emitter ->
             val descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor(".apk")

@@ -25,10 +25,14 @@ class ApkFile(private val path: String) {
         var ze = zip.nextEntry
         while (ze != null) {
             if (ze.name.endsWith(".dex")) {
-                val outputFile = File(tmpRoot, ze.name)
-                outputFile.writeBytesEx(zip.readBytes())
-                val jarFile = dex2Jar(outputFile)
-                unzipJarFile(jarFile, sourceRoot)
+                try {
+                    val outputFile = File(tmpRoot, ze.name)
+                    outputFile.writeBytesEx(zip.readBytes())
+                    val jarFile = dex2Jar(outputFile)
+                    unzipJarFile(jarFile, sourceRoot)
+                } catch (e: Throwable) {
+                    println("extra ${ze.name} failed")
+                }
             }
             ze = zip.nextEntry
         }
