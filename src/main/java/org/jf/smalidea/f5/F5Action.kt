@@ -3,16 +3,20 @@ package org.jf.smalidea.f5
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.ObservableEmitter
 import org.jf.smalidea.util.logi
 import org.jf.smalidea.util.promptError
+import org.jf.smalidea.util.promptInfo
 import java.io.File
 import java.util.regex.Pattern
 
@@ -26,11 +30,13 @@ class F5Action: AnAction() {
         private const val PROJECT_ROOT_PATH = "tmp/f5/"
         const val PROJECT_SOURCE_PATH = "${PROJECT_ROOT_PATH}src"
     }
+
     lateinit var actionRootPath: String
+    private lateinit var project: Project
 
     override fun actionPerformed(e: AnActionEvent) {
         // get current file
-        val project = e.getData(CommonDataKeys.PROJECT) as Project
+        project = e.getData(CommonDataKeys.PROJECT) as Project
         actionRootPath = "${project.basePath}/${PROJECT_ROOT_PATH}"
 
         val fem = FileEditorManager.getInstance(project)
@@ -47,6 +53,7 @@ class F5Action: AnAction() {
 
         val env = ActionEnv(project, curFile)
         if (env.className.isBlank()) {
+            promptError("Can't find the class name")
             return
         }
 
@@ -75,6 +82,8 @@ class F5Action: AnAction() {
                     return@map initialRst
                 }
                 OpenFileDescriptor(project, LocalFileSystem.getInstance().findFileByIoFile(File(dstFilePath))!!).navigate(true)
+            } else {
+                promptInfo("you didn't choice the apk file.")
             }
             initialRst
         }.subscribe({}, {
@@ -93,26 +102,42 @@ class F5Action: AnAction() {
 
     private fun extraApkFile(project: Project): Observable<Boolean> {
         // please choice the apk path
-        return Observable.create {emitter ->
+        var apkPath = ""
+        return Observable.create {emitter: ObservableEmitter<Boolean> ->
             val descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor(".apk")
             FileChooser.chooseFile(descriptor, project, null) {
                 if (it == null) {
-                    promptError("You have select no apk file")
                     emitter.onNext(false)
                     emitter.onComplete()
                 } else {
-                    parseTheApk(it.path, actionRootPath, "${project.basePath}/${PROJECT_SOURCE_PATH}")
+                    apkPath = it.path
                     emitter.onNext(true)
                     emitter.onComplete()
                 }
             }
+        }.flatMap {
+            if (it) {
+                parseTheApk(apkPath, actionRootPath, "${project.basePath}/${PROJECT_SOURCE_PATH}")
+            } else {
+                Observable.just(it)
+            }
         }
     }
 
-    private fun parseTheApk(apkPath: String, tmpRoot: String, sourceRoot: String): Boolean {
-        return ApkFile(apkPath).extra(tmpRoot, sourceRoot)
+    private fun parseTheApk(apkPath: String, tmpRoot: String, sourceRoot: String): Observable<Boolean> {
+        return Observable.create { emitter: ObservableEmitter<Boolean> ->
+            ProgressManager.getInstance().runProcessWithProgressSynchronously(
+                    {
+                        ApkFile(apkPath).extra(tmpRoot, sourceRoot)
+                    }
+                    ,"Extracting apk"
+                    , false
+                    , project
+            )
+            emitter.onNext(true)
+            emitter.onComplete()
+        }
     }
-
 
 }
 

@@ -5,6 +5,7 @@ import org.jf.smalidea.util.logi
 import org.jf.smalidea.util.promptError
 import java.io.File
 import java.io.FileInputStream
+import java.io.IOException
 import java.util.zip.ZipInputStream
 
 class ApkFile(private val path: String) {
@@ -14,6 +15,8 @@ class ApkFile(private val path: String) {
      * @param sourceRoot extra source root
      */
     fun extra(tmpRoot: String, sourceRoot: String): Boolean {
+        // How can I do this in background??
+
         logi("parse $path to $tmpRoot, src to $sourceRoot")
         if (!File(path).exists()) {
             promptError("$path not exist")
@@ -26,12 +29,18 @@ class ApkFile(private val path: String) {
         while (ze != null) {
             if (ze.name.endsWith(".dex")) {
                 try {
-                    val outputFile = File(tmpRoot, ze.name)
-                    outputFile.writeBytesEx(zip.readBytes())
-                    val jarFile = dex2Jar(outputFile)
-                    unzipJarFile(jarFile, sourceRoot)
+                    val dexFile = File(tmpRoot, ze.name)
+                    dexFile.writeBytesEx(zip.readBytes())
+                    val jarFile = dex2Jar(dexFile)
+                    if (jarFile != null) {
+                        unzipJarFile(jarFile, sourceRoot)
+                    } else {
+                        return false
+                    }
                 } catch (e: Throwable) {
-                    println("extra ${ze.name} failed")
+                    promptError("extra ${ze.name} failed")
+                    e.printStackTrace()
+                    return false
                 }
             }
             ze = zip.nextEntry
@@ -39,15 +48,20 @@ class ApkFile(private val path: String) {
         return false
     }
 
-    private fun dex2Jar(input: File): File {
+    private fun dex2Jar(input: File): File? {
         val jarFile = File(input.parent, input.nameWithoutExtension + "-dex2jar.jar")
-        println(jarFile)
+        println("being dex2jar: " + input.absolutePath + " to file " + jarFile.absolutePath)
         if (jarFile.exists()) {
             return jarFile
         }
 
         val runtime = Runtime.getRuntime()
-        runtime.exec("d2j-dex2jar.sh ${input.absolutePath}", null, input.parentFile).waitFor()
+        try {
+            runtime.exec("d2j-dex2jar.sh ${input.absolutePath}", null, input.parentFile).waitFor()
+        } catch (e: IOException) {
+            promptError("Can't run d2j-dex2jar.sh, maybe you can check your path")
+            return null
+        }
         return jarFile
     }
 

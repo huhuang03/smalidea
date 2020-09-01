@@ -10,9 +10,13 @@ private val log = Logger.getInstance("f5")
 
 fun logi(msg: String, project: Project? = null) {
     log.debug(msg)
-//    Notifications.Bus.notify(Notification("Smali-F5", "", msg, NotificationType.INFORMATION), project)
 }
 
 fun promptError(msg: String, project: Project? = null) {
     Notifications.Bus.notify(Notification("Smali-F5", "", msg, NotificationType.ERROR), project)
+    print(msg)
+}
+
+fun promptInfo(msg: String, project: Project? = null) {
+    Notifications.Bus.notify(Notification("Smali-F5", "", msg, NotificationType.INFORMATION), project)
 }
