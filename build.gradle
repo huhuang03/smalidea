@@ -32,12 +32,12 @@
 plugins {
     id 'java'
     id "org.jetbrains.kotlin.jvm" version "1.3.72"
-    id 'org.jetbrains.intellij' version '0.4.16'
+    id 'org.jetbrains.intellij' version '0.6.5'
 }
 
 apply plugin: 'antlr'
 
-version = '0.05'
+version = '0.06'
 
 def versionSuffix
 try {
@@ -62,7 +62,7 @@ targetCompatibility = 1.8
 
 
 intellij {
-    version 'IC-201.6668.121'
+    version '2020.3.2'
     plugins 'java'
     updateSinceUntilBuild false
 }
@@ -71,15 +71,29 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    priorityImplementation
+}
+sourceSets.main.compileClasspath = configurations.priorityImplementation + sourceSets.main.compileClasspath
+
 dependencies {
     compile group: 'org.smali', name: 'smali', version: '2.4.0'
     compile group: 'org.smali', name: 'dexlib2', version: '2.4.0'
     compile group: 'org.antlr', name: 'antlr-runtime', version: '3.5.2'
     compile group: 'com.google.code.gson', name: 'gson', version: '2.3.1'
     implementation "io.reactivex.rxjava3:rxjava:3.0.4"
+    // This is a bit of a hack to force smali and dexlib2 to be added to the compile classpath
+    // before the IntelliJ IDEA sources - which also contain an older version of these libraries.
+    priorityImplementation group: 'org.smali', name: 'smali', version: '2.5.0'
+    priorityImplementation group: 'org.smali', name: 'dexlib2', version: '2.5.0'
+
+    implementation group: 'org.smali', name: 'smali', version: '2.5.0'
+    implementation group: 'org.smali', name: 'dexlib2', version: '2.5.0'
+    implementation group: 'org.antlr', name: 'antlr-runtime', version: '3.5.2'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.3.1'
     antlr group: 'org.antlr', name: 'antlr', version: '3.5.2'
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
 }
 
 task extractTokens(type: org.gradle.api.tasks.Copy) {
@@ -101,3 +115,8 @@ generateGrammarSource {
     outputDirectory(file("${buildDir}/generated-src/antlr/main/org/jf/smalidea"))
 }
 generateGrammarSource.dependsOn(extractTokens)
+
+wrapper {
+    gradleVersion = '6.8.2'
+    distributionType = Wrapper.DistributionType.ALL
+}

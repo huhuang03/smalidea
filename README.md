@@ -1,12 +1,22 @@
+## Why I fork
+I want a function with F5 to open the java file corresponding the smali file.
+
 smalidea is a smali language plugin for [IntelliJ IDEA](https://www.jetbrains.com/idea/)/[Android Studio](http://developer.android.com/sdk/index.html)
 
-### [DOWNLOAD](https://bitbucket.org/JesusFreke/smali/downloads) ###
+### [DOWNLOAD](https://bitbucket.org/JesusFreke/smalidea/downloads) ###
 
 It is currently very experimental, and you will likely run into issues.
 
 [![](https://raw.githubusercontent.com/wiki/JesusFreke/smali/smalidea.png)](https://raw.githubusercontent.com/wiki/JesusFreke/smali/smalidea.png)
 
 ## News
+* 2021-03-02 - v0.06 is out. This brings smalidea back up to snuff with regards to modern versions of IDEA/Android Studio
+  * This force updates the smali file type to be associated with this plugin instead of the built-in smali plugin in Android Studio
+  * This adds support for the new synaxes (hidden api restrictions, spaces in identifiers, etc.)
+  * This [fixes a problem](https://github.com/JesusFreke/smalidea/pull/10) with how registers were mapped on art while debugging (thanks @bet4it)
+  * [Structure view](https://github.com/JesusFreke/smalidea/pull/14) for smali files (thanks @Donlon)
+
+
 * 2020-02-23 - smalidea has been migrated to a separate repository. This new repository is a filtered copy
 of the original smali repository in order to maintain the git history. However, any versions prior to this migration
 are not expected to actually build. If you need to build an old version for some reason, you should check out and
@@ -49,7 +59,7 @@ build from the smali repository.
   * Find locations where the register's value could have been set
 
 ## Installation
-1. Download the latest smalidea zip file from the [Bitbucket download page](https://bitbucket.org/JesusFreke/smali/downloads)
+1. Download the latest smalidea zip file from the [Bitbucket download page](https://bitbucket.org/JesusFreke/smalidea/downloads)
 2. In IDEA/AS, go to Settings->Plugins and click the "Install plugin from disk" button, selecting the downloaded smalidea zip file
 3. Click "Apply" and restart IDEA/AS
 4. ???
@@ -65,10 +75,11 @@ Note: Single-instruction stepping is only supported in IDEA 14.1 and greater, an
 4. Once the project has been created, right click on the src directory and select "Mark Directory As->Sources Root"
 5. Open the project settings and select/create an appropriate JDK
 6. Install/start the application on the device
-7. Run ddms, and select the application's process
-8. In IDEA, Create a new "Remote" debug configuration (Run->Edit Configurations), and change the debug port to 8700
-9. Run->Debug
-10. The application should pause if/when the breakpoint is hit, at which point you can single step, add watches, etc.
+7. Run `adb shell ps | grep <package-name>` and take note of the pid of the application process
+8. run `adb forward tcp:8700 jdwp:<pid>`
+9. In IDEA, Create a new "Remote" debug configuration (Run->Edit Configurations), and change the debug port to 8700
+10. Run->Debug
+11. The application should pause if/when the breakpoint is hit, at which point you can single step, add watches, etc.
 
 or do the following in recent Android Studio 3.2:
 
@@ -76,7 +87,9 @@ or do the following in recent Android Studio 3.2:
 2. In Android Studio, close your current project and select "Open an existing Android Studio project".
 3. Once the project has been created, right click on the src directory and select "Mark Directory As->Sources Root"
 4. Make sure your app has `android:debuggable="true"` in Android Manifest. Turn on "USB debugging" and use "Select debug app" to select your app in "Developer options" on Android device
-5. Start your application and forward JDWP service to localhost using `adb forward tcp:8700 jdwp:$(timeout 0.5 adb jdwp | tail -n 1)`
-6. In Android Studio, Create a new "Remote" debug configuration (Run->Edit Configurations), and change the debug port to 8700
-7. In Android Studio, select Run -> Debug
-8. The application should pause if/when the breakpoint is hit, at which point you can single step, add watches, etc.
+5. Install/start the application on the device
+6. Run `adb shell ps | grep <package-name>` and take note of the pid of the application process
+7. run `adb forward tcp:8700 jdwp:<pid>`
+8. In Android Studio, Create a new "Remote" debug configuration (Run->Edit Configurations), and change the debug port to 8700
+9. In Android Studio, select Run -> Debug
+10. The application should pause if/when the breakpoint is hit, at which point you can single step, add watches, etc.

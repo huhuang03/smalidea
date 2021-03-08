@@ -1,57 +1,71 @@
 <idea-plugin version="2">
-  <id>org.jf.smalidea</id>
-  <name>Smalidea</name>
-  <version>0.04</version>
-  <vendor email="jesusfreke@jesusfreke.com" url="http://smali.org">JesusFreke</vendor>
+    <id>org.jf.smalidea</id>
+    <name>Smalidea</name>
+    <version>0.06</version>
+    <vendor email="jesusfreke@jesusfreke.com" url="http://smali.org">JesusFreke</vendor>
 
-  <description><![CDATA[
-      A smali language plugin for IDEA
+    <description><![CDATA[
+      A smali language plugin for IDEA that supports syntax highlighting, debugging, navigation, etc.
     ]]></description>
 
-  <change-notes><![CDATA[
-    ]]>
-  </change-notes>
+    <change-notes><![CDATA[]]>
+    </change-notes>
 
-  <idea-version since-build="191.4212.41"/>
+    <idea-version since-build="191.4212.41"/>
 
-  <extensions defaultExtensionNs="com.intellij">
-      <fileTypeFactory implementation="org.jf.smalidea.SmaliFileTypeFactory"/>
-      <syntaxHighlighter key="smali" factoryClass="org.jf.smalidea.highlighter.SmaliHighlighterFactory"/>
-      <lang.syntaxHighlighterFactory language="smali" implementationClass="org.jf.smalidea.highlighter.SmaliHighlighterFactory"/>
-      <colorSettingsPage implementation="org.jf.smalidea.SmaliColorsPage"/>
-      <lang.parserDefinition language="smali" implementationClass="org.jf.smalidea.SmaliParserDefinition"/>
-      <lang.ast.factory language="smali" implementationClass="org.jf.smalidea.SmaliASTFactory"/>
-      <java.elementFinder implementation="org.jf.smalidea.psi.index.SmaliClassFinder"/>
-      <stubIndex implementation="org.jf.smalidea.psi.index.SmaliClassNameIndex"/>
-      <debugger.positionManagerFactory implementation="org.jf.smalidea.debugging.SmaliPositionManagerFactory"/>
-      <debugger.jvmSteppingCommandProvider implementation="org.jf.smalidea.debugging.SmaliSteppingCommandProvider"/>
-      <debugger.codeFragmentFactory implementation="org.jf.smalidea.debugging.SmaliCodeFragmentFactory"/>
-      <stubElementTypeHolder class="org.jf.smalidea.psi.SmaliElementTypes" />
-      <lang.findUsagesProvider language="smali"
-                               implementationClass="org.jf.smalidea.findUsages.SmaliFindUsagesProvider"/>
-      <referencesSearch implementation="org.jf.smalidea.findUsages.SmaliClassReferenceSearcher"/>
-      <usageTargetProvider implementation="org.jf.smalidea.findUsages.SmaliUsageTargetProvider" />
-      <usageTypeProvider implementation="org.jf.smalidea.findUsages.SmaliUsageTypeProvider"/>
-      <errorHandler implementation="org.jf.smalidea.errorReporting.ErrorReporter"/>
-      <todoIndexer filetype="smali" implementationClass="org.jf.smalidea.highlighter.SmaliTodoIndexer"/>
-  </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <fileType name="smali" implementationClass="org.jf.smalidea.SmaliFileType"
+                  fieldName="INSTANCE" language="smali" extensions="smali"/>
+        <syntaxHighlighter key="smali" factoryClass="org.jf.smalidea.highlighter.SmaliHighlighterFactory"/>
+        <lang.syntaxHighlighterFactory language="smali"
+                                       implementationClass="org.jf.smalidea.highlighter.SmaliHighlighterFactory"/>
+        <colorSettingsPage implementation="org.jf.smalidea.SmaliColorsPage"/>
+        <lang.parserDefinition language="smali" implementationClass="org.jf.smalidea.SmaliParserDefinition"/>
+        <lang.ast.factory language="smali" implementationClass="org.jf.smalidea.SmaliASTFactory"/>
+        <java.elementFinder implementation="org.jf.smalidea.psi.index.SmaliClassFinder"/>
+        <stubIndex implementation="org.jf.smalidea.psi.index.SmaliClassNameIndex"/>
+        <debugger.positionManagerFactory implementation="org.jf.smalidea.debugging.SmaliPositionManagerFactory"/>
+        <debugger.jvmSteppingCommandProvider implementation="org.jf.smalidea.debugging.SmaliSteppingCommandProvider"/>
+        <debugger.codeFragmentFactory implementation="org.jf.smalidea.debugging.SmaliCodeFragmentFactory"/>
+        <stubElementTypeHolder class="org.jf.smalidea.psi.SmaliElementTypes"/>
+        <lang.findUsagesProvider language="smali"
+                                 implementationClass="org.jf.smalidea.findUsages.SmaliFindUsagesProvider"/>
+        <referencesSearch implementation="org.jf.smalidea.findUsages.SmaliClassReferenceSearcher"/>
+        <lang.psiStructureViewFactory language="smali"
+                                      implementationClass="org.jf.smalidea.structureView.SmaliStructureViewBuilderFactory"/>
+        <usageTargetProvider implementation="org.jf.smalidea.findUsages.SmaliUsageTargetProvider"/>
+        <usageTypeProvider implementation="org.jf.smalidea.findUsages.SmaliUsageTypeProvider"/>
+        <errorHandler implementation="org.jf.smalidea.errorReporting.ErrorReporter"/>
+        <todoIndexer filetype="smali" implementationClass="org.jf.smalidea.highlighter.SmaliTodoIndexer"/>
 
-  <application-components>
-  </application-components>
+        <!-- The "Smali" (with a capital S) language is the one registered by Android Studio's smali plugin.
+             This substitutor ensures that smalidea's "smali" (lowercase s) language is used instead of AS's "Smali"
+             language. -->
+        <lang.substitutor language="Smali" implementationClass="org.jf.smalidea.SmaliSubstitutor"/>
+    </extensions>
 
-  <project-components>
-  </project-components>
+    <application-components>
+    </application-components>
 
-  <actions>
-      <action id="org.jf.smalidea.thTest.FirstAction" class="org.jf.smalidea.thTest.FirstAction"
-              text="Hello My First Action" description="hahaha">
-          <add-to-group group-id="ToolsMenu" anchor="first"/>
-      </action>
-      <action id="org.jf.smalidea.f5.F5Action" class="org.jf.smalidea.f5.F5Action" text="Show Java"
-              description="Show the correspond java source to this smali file. Please notice that the java file is produced by the dex2java. Not by disassembly.">
-          <keyboard-shortcut first-keystroke="F5" keymap="$default"/>
-          <add-to-group group-id="CodeMenu" anchor="first"/>
-      </action>
-  </actions>
+    <project-components>
+    </project-components>
+
+    <actions>
+        <action id="org.jf.smalidea.thTest.FirstAction" class="org.jf.smalidea.thTest.FirstAction"
+                text="Hello My First Action" description="hahaha">
+            <add-to-group group-id="ToolsMenu" anchor="first"/>
+        </action>
+        <action id="org.jf.smalidea.f5.F5Action" class="org.jf.smalidea.f5.F5Action" text="Show Java"
+                description="Show the correspond java source to this smali file. Please notice that the java file is produced by the dex2java. Not by disassembly.">
+            <keyboard-shortcut first-keystroke="F5" keymap="$default"/>
+            <add-to-group group-id="CodeMenu" anchor="first"/>
+        </action>
+    </actions>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.java</depends>
+    <depends>com.intellij.modules.xdebugger</depends>
+
 
 </idea-plugin>

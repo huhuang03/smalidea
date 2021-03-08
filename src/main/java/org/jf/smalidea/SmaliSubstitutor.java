@@ -1,5 +1,5 @@
 /*
- * Copyright 2012, Google Inc.
+ * Copyright 2021, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,13 +31,19 @@
 
 package org.jf.smalidea;
 
-import com.intellij.openapi.fileTypes.FileTypeConsumer;
-import com.intellij.openapi.fileTypes.FileTypeFactory;
+import com.intellij.lang.Language;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.LanguageSubstitutor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class SmaliFileTypeFactory extends FileTypeFactory {
-    @Override
-    public void createFileTypes(@NotNull FileTypeConsumer consumer) {
-        consumer.consume(SmaliFileType.INSTANCE, SmaliFileType.DEFAULT_EXTENSION);
+public class SmaliSubstitutor extends LanguageSubstitutor {
+
+    private static final Logger log = Logger.getInstance("smalidea");
+
+    @Override public @Nullable Language getLanguage(@NotNull VirtualFile virtualFile, @NotNull Project project) {
+        return SmaliLanguage.INSTANCE;
     }
 }
